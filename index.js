@@ -82,13 +82,13 @@ async function run() {
             res.send( { admin: isAdmin } );
         } );
 
-        app.get( '/product', verifyJWT, async ( req, res ) => {
+        app.get( '/product', async ( req, res ) => {
             const products = await productCollection.find().toArray();
             res.send( products );
 
         } );
 
-        app.post( '/product', verifyJWT, verifyAdmin, async ( req, res ) => {
+        app.post( '/product', verifyJWT, async ( req, res ) => {
             const product = req.body;
             const result = await productCollection.insertOne( product );
             res.send( result );
@@ -103,13 +103,21 @@ async function run() {
 
         app.post( '/order', async ( req, res ) => {
             const info = req.body;
-            // const query = { product: info.product};
-            // const exists = await borderCollection.findOne( query );
-            // if ( exists ) {
-            //     return res.send( { success: false, info: exists } );
-            // }
             const result = await orderCollection.insertOne( info );
-            return res.send( { success: true, result } );
+            res.send( { success: true, result } );
+        } );
+
+        app.get( '/order/:email', verifyJWT, async ( req, res ) => {
+            const email = req.params.email;
+            const decodedEmail = req.decoded.email;
+            if ( email === decodedEmail ) {
+                const query = { email: email };
+                const orders = await orderCollection.find( query ).toArray();
+                return res.status( 200 ).send( orders );
+            }
+            else {
+                return res.status( 403 ).send( { message: 'Forbidden Access' } );
+            }
         } );
 
     }

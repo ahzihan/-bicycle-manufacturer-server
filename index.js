@@ -82,12 +82,13 @@ async function run() {
             res.send( { admin: isAdmin } );
         } );
 
-        app.get( '/product', async ( req, res ) => {
+        app.get( '/product', verifyJWT, async ( req, res ) => {
             const products = await productCollection.find().toArray();
             res.send( products );
+
         } );
 
-        app.post( '/product', verifyJWT, async ( req, res ) => {
+        app.post( '/product', verifyJWT, verifyAdmin, async ( req, res ) => {
             const product = req.body;
             const result = await productCollection.insertOne( product );
             res.send( result );
@@ -100,13 +101,13 @@ async function run() {
             res.send( result );
         } );
 
-        app.get( '/order', verifyJWT, verifyAdmin, async ( req, res ) => {
-            const orders = await orderCollection.find().toArray();
-            res.send( orders );
-        } );
-
-        app.post( '/order', verifyJWT, async ( req, res ) => {
+        app.post( '/order', async ( req, res ) => {
             const info = req.body;
+            // const query = { product: info.product};
+            // const exists = await borderCollection.findOne( query );
+            // if ( exists ) {
+            //     return res.send( { success: false, info: exists } );
+            // }
             const result = await orderCollection.insertOne( info );
             return res.send( { success: true, result } );
         } );

@@ -105,7 +105,7 @@ async function run() {
             res.send( orders );
         } );
 
-        app.post( '/order', async ( req, res ) => {
+        app.post( '/order', verifyJWT, async ( req, res ) => {
             const info = req.body;
             const result = await orderCollection.insertOne( info );
             return res.send( { success: true, result } );

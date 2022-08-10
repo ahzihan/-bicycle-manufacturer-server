@@ -53,9 +53,9 @@ async function run() {
 
         //Payment Operation
 
-        app.post( '/create-payment-intent', verifyJWT, async ( req, res ) => {
+        app.post( '/create-payment-intent', async ( req, res ) => {
             const service = req.body;
-            const price = service.price;
+            const price = service.subTotal;
             const amount = price * 100;
             const paymentIntent = await stripe.paymentIntents.create( {
                 amount: amount,
@@ -76,8 +76,8 @@ async function run() {
                 }
             };
             const result = await paymentCollection.insertOne( payment );
-            const updatedBooking = await orderCollection.updateOne( filter, updateDoc );
-            res.send( updatedBooking );
+            const updatedOrder = await orderCollection.updateOne( filter, updateDoc );
+            res.send( updatedOrder );
         } );
 
         //User & Admin Operations
@@ -153,6 +153,13 @@ async function run() {
             res.send( orders );
         } );
 
+        app.get( '/order/:id([0-9a-fA-F]{24})', async ( req, res ) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId( id ) };
+            const order = await orderCollection.findOne( query );
+            res.send( order );
+        } );
+
         app.get( '/order/:email', verifyJWT, async ( req, res ) => {
             const email = req.params.email;
             const decodedEmail = req.decoded.email;
@@ -166,13 +173,6 @@ async function run() {
             }
         } );
 
-        app.get( '/order/:id', verifyJWT, async ( req, res ) => {
-            const id = req.params.id;
-            const filter = { _id: ObjectId( id ) };
-            const order = await orderCollection.findOne( filter );
-            console.log( order );
-            res.send( order );
-        } );
 
         //Review Operations
 
